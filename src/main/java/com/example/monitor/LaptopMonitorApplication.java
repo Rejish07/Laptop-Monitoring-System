@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -25,6 +26,8 @@ public class LaptopMonitorApplication {
     // --- MAIL CONFIGURATION ---
     @Autowired
     private JavaMailSender mailSender;
+    @Value("${spring.mail.enduseremail}")
+    private String userEmail;
 
     // Cooldown system: Only send 1 email every 5 minutes
     private LocalDateTime lastAlertTime = LocalDateTime.MIN; 
@@ -119,7 +122,7 @@ public class LaptopMonitorApplication {
     private void sendEmail(LaptopStats stats) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo("YOUR_EMAIL@gmail.com");
+            message.setTo(userEmail);
             message.setSubject(" ALERT: Laptop Critical Status");
             message.setText(
                 "Warning! Your laptop has reached critical levels.\n\n" +
