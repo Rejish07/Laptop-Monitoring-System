@@ -1,0 +1,19 @@
+# --- Java Waste ---
+target/
+*.class
+
+# --- IDE Waste ---
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# --- Python Waste ---
+venv/
+__pycache__/
+*.pyc
+
+# --- System Waste ---
+.DS_Store
