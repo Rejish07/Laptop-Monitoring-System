@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Laptop Strength Analyzer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Laptop Strength Analyzer</h1>
+            <p class="subtitle">Monitor your laptop's performance in real-time</p>
+        </header>
+
+        <div class="actions">
+            <button id="simulateBtn" class="btn btn-primary">Simulate Analysis</button>
+            <button id="refreshBtn" class="btn btn-secondary">Refresh Data</button>
+        </div>
+
+        <div class="cards">
+            <div class="card score-card">
+                <h2>Strength Score</h2>
+                <div class="score-display">
+                    <span id="score" class="score">--</span>
+                    <span class="score-max">/100</span>
+                </div>
+                <p id="message" class="message">No data available</p>
+            </div>
+
+            <div class="card">
+                <h2>CPU Load</h2>
+                <div class="metric">
+                    <span id="cpuLoad" class="value">--</span>
+                    <span class="unit">%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="cpuProgress" class="progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Free RAM</h2>
+                <div class="metric">
+                    <span id="freeRam" class="value">--</span>
+                    <span class="unit">GB</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="ramProgress" class="progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Battery Level</h2>
+                <div class="metric">
+                    <span id="batteryLevel" class="value">--</span>
+                    <span class="unit">%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="batteryProgress" class="progress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timestamp-container">
+            <p>Last updated: <span id="timestamp">Never</span></p>
+        </div>
+
+        <div class="instructions">
+            <h3>How to use</h3>
+            <p><strong>Option 1:</strong> Click "Simulate Analysis" to test with random data.</p>
+            <p><strong>Option 2:</strong> Run the Python client on your laptop to send real metrics:</p>
+            <pre>export SERVER_URL=<span th:text="${serverUrl}"></span>
+python client_agent.py</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        function updateUI(data) {
+            if (data && data.strengthScore !== undefined) {
+                document.getElementById('score').textContent = data.strengthScore;
+                document.getElementById('message').textContent = data.message || '';
+                
+                const scoreCard = document.querySelector('.score-card');
+                scoreCard.className = 'card score-card';
+                if (data.strengthScore >= 80) {
+                    scoreCard.classList.add('excellent');
+                } else if (data.strengthScore >= 60) {
+                    scoreCard.classList.add('good');
+                } else if (data.strengthScore >= 40) {
+                    scoreCard.classList.add('fair');
+                } else {
+                    scoreCard.classList.add('poor');
+                }
+            }
+
+            if (data.cpuLoad !== undefined) {
+                document.getElementById('cpuLoad').textContent = data.cpuLoad.toFixed(1);
+                document.getElementById('cpuProgress').style.width = data.cpuLoad + '%';
+            }
+
+            if (data.freeRam !== undefined) {
+                const freeRamGB = (data.freeRam / (1024 * 1024 * 1024)).toFixed(2);
+                document.getElementById('freeRam').textContent = freeRamGB;
+                document.getElementById('ramProgress').style.width = Math.min((freeRamGB / 16) * 100, 100) + '%';
+            }
+
+            if (data.batteryLevel !== undefined) {
+                document.getElementById('batteryLevel').textContent = data.batteryLevel.toFixed(1);
+                document.getElementById('batteryProgress').style.width = data.batteryLevel + '%';
+            }
+
+            if (data.timestamp) {
+                document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString();
+            }
+        }
+
+        async function fetchLatest() {
+            try {
+                const response = await fetch(API_BASE + '/api/latest');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        async function simulateAnalysis() {
+            try {
+                const response = await fetch(API_BASE + '/api/simulate', {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error('Error simulating:', error);
+            }
+        }
+
+        document.getElementById('simulateBtn').addEventListener('click', simulateAnalysis);
+        document.getElementById('refreshBtn').addEventListener('click', fetchLatest);
+
+        fetchLatest();
+    </script>
+</body>
+</html>
