@@ -112,7 +112,7 @@ public class LaptopMonitorApplication {
             // Check if 5 minutes have passed since last email
             long minutesSinceLast = ChronoUnit.MINUTES.between(lastAlertTime, LocalDateTime.now());
             
-            if (minutesSinceLast >= 5) {
+            if (minutesSinceLast >= 1) {
                 sendEmail(stats);
                 lastAlertTime = LocalDateTime.now();
             }
